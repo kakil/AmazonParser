@@ -1,27 +1,25 @@
-from pathlib import Path
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
-
-# Load .env file
-load_dotenv()
-
+from pathlib import Path
 import requests
 import csv
 import os
 from bs4 import BeautifulSoup
 
+# FastAPI app
+app = FastAPI()
+
+# Load .env file
+load_dotenv()
+
 BASE_DIR = Path(__file__).parent
 READY = BASE_DIR / 'ready'
 
-API_KEY = '1fb6e6ec-b0d4-4c30-b819-7c6cb86cf795'  # add scrapeops.io api key here
-# API_KEY = os.getenv("SCRAPEOPS_API_KEY")
-
 titles = []
 
-keys = ['adult coloring book for women naughty', ]  # add the keyphrases for parsing here.
 
-
-def write_csv(data):
-
+def write_csv(data, keys):
     name = ','.join(keys)
 
     if len(name) > 100:
@@ -32,35 +30,33 @@ def write_csv(data):
         writer.writerow(data)
 
 
-def get_html(url):
+def get_html(url, api_key):
     response = requests.get(
-      url='https://proxy.scrapeops.io/v1/',
-      params={
-          'api_key': API_KEY,
-          'url': url,
-
-      },
+        url='https://proxy.scrapeops.io/v1/',
+        params={
+            'api_key': api_key,
+            'url': url,
+        },
     )
     response.encoding = 'utf-8'
 
     return response.text
 
 
-def main():
+@app.get("/scrape/")
+async def scrape(key: str, api_key: str):
+    if not api_key:
+        return JSONResponse(content={
+            'error': 'Please provide a valid API key'
+        }, status_code=400)
+
+    keys = [key]
     for elem in keys:
         url = 'https://www.amazon.com/s?k=' + elem.replace(' ', '+')
-
-        # print(f'Parsing titles for the key phrase "{elem}"\n'f'Link: {url}')
-
-        html = get_html(url)
-        
-        # print("HTML Content: ", html[:200])  # Print the first 200 characters of HTML
-
+        html = get_html(url, api_key)
         soup = BeautifulSoup(html, 'lxml')
 
         block = soup.select('div[cel_widget_id*="MAIN-SEARCH_RESULTS"]')
-
-        # print("Number of blocks found: ", len(block))  # Print the number of blocks found
 
         for i in block:
             title = i.find('h2')
@@ -70,15 +66,9 @@ def main():
 
                 if title not in titles:
                     titles.append(title)
-                    write_csv(data)
+                    write_csv(data, keys)
 
-        print(f'{len(block)} titles are written in the CSV file (ready folder)')
-
-
-
-if __name__ == '__main__':
-    if not API_KEY:
-        print('Register a free account on scrapeops.io, copy the API key,\n'
-              'and assign it to the string constant API_KEY in the main.py file')
-    else:
-        main()
+    return JSONResponse(content={
+        'message': f'{len(block)} titles are written in the CSV file (ready folder)',
+        'titles': titles
+    })
