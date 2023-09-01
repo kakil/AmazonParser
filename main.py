@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from pathlib import Path
 import requests
@@ -9,6 +10,15 @@ from bs4 import BeautifulSoup
 
 # FastAPI app
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins. You can also specify a list of allowed origins.
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods.
+    allow_headers=["*"],  # Allows all headers.
+)
 
 # Load .env file
 load_dotenv()
