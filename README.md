@@ -1,4 +1,4 @@
-# AmazonParser
+# AmazonParser Python code
  This script scrapes a given Amazon page for product titles
 
  Installation:
