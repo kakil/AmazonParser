@@ -1,4 +1,4 @@
-# AmazonParser
+# AmazonParser Python code
  This script scrapes a given Amazon page for product titles using a give Keyword.
  **** You will need an API Key from Scrapeops.io:  https://scrapeops.io
 
