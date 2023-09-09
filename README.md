@@ -1,5 +1,6 @@
 # AmazonParser
- This script scrapes a given Amazon page for product titles
+ This script scrapes a given Amazon page for product titles using a give Keyword.
+ **** You will need an API Key from Scrapeops.io:  https://scrapeops.io
 
  Installation:
 
